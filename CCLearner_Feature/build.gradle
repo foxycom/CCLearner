@@ -1,0 +1,30 @@
+plugins {
+    id 'java'
+    id 'org.openjfx.javafxplugin' version '0.0.9'
+}
+
+javafx {
+    version = "11.0.2"
+    modules = [ 'javafx.controls', 'javafx.fxml' ]
+}
+
+group 'de.uni_passau'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.eclipse.jdt:core:3.3.0-v_771'
+    implementation 'org.antlr:antlr4:4.5'
+    implementation 'org.apache.commons:commons-lang3:3.0'
+    implementation 'org.postgresql:postgresql:42.2.18'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+
+}
+
+test {
+    useJUnitPlatform()
+}

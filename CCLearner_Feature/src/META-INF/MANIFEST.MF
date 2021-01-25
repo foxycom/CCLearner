@@ -7,5 +7,5 @@ Class-Path: lib/antlr-4.5-complete.jar lib/commons-lang3-3.0.jar lib/org.eclipse
  g.eclipse.core.resources-3.9.1.v20140825-1431.jar lib/org.eclipse.core.jo
  bs-3.6.0.v20140424-0053.jar lib/org.eclipse.osgi-3.10.1.v20140909-1633.ja
  r
-Main-Class: vt.cs.CCLearner_Feature
+Main-Class: cs.CCLearner_Feature
 

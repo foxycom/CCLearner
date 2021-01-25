@@ -2,9 +2,6 @@ package vt.cs;
 
 import com.sun.javafx.fxml.expression.Expression;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class MethodSimilarity {
 
 	public double simTokenReservedWord, simTokenType, simTokenLiteral;

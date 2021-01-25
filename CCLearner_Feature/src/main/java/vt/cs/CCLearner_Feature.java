@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit;
 
 public class CCLearner_Feature {
 
-    public static String config_file = "/home/cclearner/Desktop/CCLearner/CCLearner.conf";
+    public static String config_file = "/Users/tim/Vorlesungen/dl-se/CCLearner/CCLearner.conf";
 
 	public static String connURL;
 	public static String userName;
