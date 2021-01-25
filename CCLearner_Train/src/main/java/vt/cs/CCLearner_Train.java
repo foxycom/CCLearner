@@ -6,30 +6,30 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 
-import org.canova.api.records.reader.RecordReader;
-import org.canova.api.records.reader.impl.CSVRecordReader;
-import org.canova.api.split.FileSplit;
-import org.deeplearning4j.datasets.canova.RecordReaderDataSetIterator;
+import org.datavec.api.records.reader.RecordReader;
+import org.datavec.api.records.reader.impl.csv.CSVRecordReader;
+import org.datavec.api.split.FileSplit;
+import org.deeplearning4j.datasets.datavec.RecordReaderDataSetIterator;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
+import org.deeplearning4j.nn.conf.BackpropType;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
-import org.deeplearning4j.nn.conf.Updater;
 import org.deeplearning4j.nn.conf.layers.DenseLayer;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
-import org.deeplearning4j.optimize.api.IterationListener;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
 import org.deeplearning4j.util.ModelSerializer;
+import org.nd4j.linalg.activations.Activation;
+import org.nd4j.linalg.learning.config.Nesterovs;
 import org.nd4j.linalg.lossfunctions.LossFunctions.LossFunction;
-import org.deeplearning4j.datasets.iterator.DataSetIterator;
 
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 public class CCLearner_Train {
 
-    public static String config_file = "/Users/tim/Vorlesungen/dl-se/CCLearner/CCLearner.conf";
+    public static String config_file = "C:/Users/timvs/IdeaProjects/CCLearner/CCLearner.conf";
 
     public static String training_file;
 
@@ -76,24 +76,26 @@ public class CCLearner_Train {
         //Load the training data:
         RecordReader rr = new CSVRecordReader();
         rr.initialize(new FileSplit(new File(training_file)));
-        DataSetIterator trainIter = new RecordReaderDataSetIterator(rr, batchSize, 0, 2);
+        var trainIter = new RecordReaderDataSetIterator(rr, batchSize, 0, 2);
 
         long start = System.nanoTime();
-
-        MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
+        var builder = new NeuralNetConfiguration.Builder()
                 .seed(seed)
-                .iterations(1)
+                //.iterations(1)
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
-                .learningRate(learningRate)
-                .updater(Updater.NESTEROVS).momentum(0.9)
+                .updater(new Nesterovs(learningRate, 0.9))
+                //.learningRate(learningRate)
+                //.updater(Updater.NESTEROVS).momentum(0.9)
                 .list()
                 .layer(0, new DenseLayer.Builder().nIn(numInputs).nOut(numHiddenNodes)
                         .weightInit(WeightInit.XAVIER)
-                        .activation("relu")
+                        //.activation("relu")
+                        .activation(Activation.RELU)
                         .build())
                 .layer(1, new DenseLayer.Builder().nIn(numHiddenNodes).nOut(numHiddenNodes)
                         .weightInit(WeightInit.XAVIER)
-                        .activation("relu")
+                        //.activation("relu")
+                        .activation(Activation.RELU)
                         .build())
             /*
             .layer(2, new DenseLayer.Builder().nIn(numHiddenNodes).nOut(numHiddenNodes)
@@ -132,14 +134,17 @@ public class CCLearner_Train {
             */
                 .layer(2, new OutputLayer.Builder(LossFunction.NEGATIVELOGLIKELIHOOD)
                         .weightInit(WeightInit.XAVIER)
-                        .activation("softmax").weightInit(WeightInit.XAVIER)
-                        .nIn(numHiddenNodes).nOut(numOutputs).build())
-                .pretrain(false).backprop(true).build();
+                        .activation(Activation.SOFTMAX).weightInit(WeightInit.XAVIER)
+                        .nIn(numHiddenNodes).nOut(numOutputs).build());
+                //.pretrain(false)
+                //.backprop(true)
+        builder.setBackpropType(BackpropType.Standard);
+        MultiLayerConfiguration conf = builder.build();
 
 
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
         model.init();
-        model.setListeners(Collections.singletonList((IterationListener) new ScoreIterationListener(10)));
+        model.setListeners(Collections.singletonList(new ScoreIterationListener(10)));
 
 
         for (int n = 0; n < nEpochs; n++) {

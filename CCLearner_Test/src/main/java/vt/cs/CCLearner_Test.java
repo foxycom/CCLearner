@@ -6,12 +6,13 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class CCLearner_Test {
 
-    public static String config_file = "/home/cclearner/Desktop/CCLearner/CCLearner.conf";
+    public static String config_file = "C:/Users/timvs/IdeaProjects/CCLearner/CCLearner.conf";
 
     public static String source_file_path;
     public static String clone_file_path;
@@ -41,7 +42,7 @@ public class CCLearner_Test {
 
     public static PrintWriter writer = null;
 
-    public static void Load_Config(){
+    public static void loadConfig(){
         try {
             Properties prop = new Properties();
             InputStream is = new FileInputStream(config_file);
@@ -55,14 +56,14 @@ public class CCLearner_Test {
 
             testing_folder = prop.getProperty("testing.folder").split(",");
 
-            feature_num = Integer.valueOf(prop.getProperty("feature.num"));
+            feature_num = Integer.parseInt(prop.getProperty("feature.num"));
             feature_name = prop.getProperty("feature.name");
 
             model_File = prop.getProperty("model.file.path");
             pos_File = prop.getProperty("pos.file.path");
             sim_File = prop.getProperty("sim.file.path");
 
-            clone_Threshold = Double.valueOf(prop.getProperty("testing.sim_threshold"));
+            clone_Threshold = Double.parseDouble(prop.getProperty("testing.sim_threshold"));
         }
         catch (IOException e) {
             e.printStackTrace();
@@ -71,7 +72,7 @@ public class CCLearner_Test {
 
     public static void main(String[] args) throws Exception {
 
-        Load_Config();
+        loadConfig();
 
         model = ModelSerializer.restoreMultiLayerNetwork(model_File);
 
@@ -79,7 +80,7 @@ public class CCLearner_Test {
 
         for (int index = testing_folder.length - 1; index >= 0; index--) {
 
-            writer = new PrintWriter(output_dir + testing_folder[index] + ".csv", "UTF-8");
+            writer = new PrintWriter(output_dir + testing_folder[index] + ".csv", StandardCharsets.UTF_8);
 
             files.clear();
 
@@ -131,17 +132,17 @@ public class CCLearner_Test {
 
     public static void GetAllMethodsFromFiles() throws Exception {
 
-        for(int index1 = 0; index1 < files.size(); index1++) {
-            ASTparserTool.setFileName(files.get(index1).getAbsolutePath());
-            methodVectorList = ASTparserTool.parseMethod(files.get(index1).getAbsolutePath());
+        for (File file : files) {
+            ASTparserTool.setFileName(file.getAbsolutePath());
+            methodVectorList = ASTparserTool.parseMethod(file.getAbsolutePath());
         }
     }
 
     public static void CreateSimFile() throws Exception {
 
         int writer_flush_count = 0;
-        PrintWriter writer1 = new PrintWriter(sim_File, "UTF-8");
-        PrintWriter writer2 = new PrintWriter(pos_File, "UTF-8");
+        PrintWriter writer1 = new PrintWriter(sim_File, StandardCharsets.UTF_8);
+        PrintWriter writer2 = new PrintWriter(pos_File, StandardCharsets.UTF_8);
 
         for (int i = 0; i < methodVectorList.size() - 1; i++) {
             if(i % 500 == 0)
@@ -204,7 +205,7 @@ public class CCLearner_Test {
         double[] matrix = new double[feature_num];
         int column = 0;
         while (scanner1.hasNext()) {
-            matrix[column] = Double.valueOf(scanner1.next());
+            matrix[column] = Double.parseDouble(scanner1.next());
             column++;
             if(column % feature_num == 0) {
                 String result = scanner2.next();
@@ -225,8 +226,8 @@ public class CCLearner_Test {
         String line;
 
         FileWriter writer = new FileWriter(clone_file_path);
-        for (int i = 0; i < testing_folder.length; i++) {
-            BufferedReader br = new BufferedReader(new FileReader(output_dir + testing_folder[i] + ".csv"));
+        for (String value : testing_folder) {
+            BufferedReader br = new BufferedReader(new FileReader(output_dir + value + ".csv"));
             while ((line = br.readLine()) != null) {
                 // writer.write("1," + line + "\n");
                 writer.write(line + "\n");
@@ -236,8 +237,8 @@ public class CCLearner_Test {
         writer.close();
 
         try {
-            for (int i = 0; i < testing_folder.length; i++) {
-                File file = new File(output_dir + testing_folder[i] + ".csv");
+            for (String s : testing_folder) {
+                File file = new File(output_dir + s + ".csv");
                 file.delete();
             }
             File pos_file = new File(pos_File);
