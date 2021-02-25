@@ -20,6 +20,7 @@ import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
 import org.deeplearning4j.util.ModelSerializer;
+import org.nd4j.autodiff.samediff.SameDiff;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.learning.config.Nesterovs;
 import org.nd4j.linalg.lossfunctions.LossFunctions.LossFunction;
@@ -68,76 +69,61 @@ public class CCLearner_Train {
     }
   }
 
-  public static void main(String[] args) throws Exception {
+  private static void loadCode2Vec() {
+    SameDiff sd =
+        SameDiff.importFrozenTF(
+            new File(
+                "C:/Users/timvs/CCLearner/models/java14_model/saved_model_iter8.release.index"));
+    System.out.println(sd.summary());
+  }
 
+  public static void main(String[] args) throws Exception {
+    //loadCode2Vec();
     loadConfig();
 
-    //Load the training data:
+    // Load the training data:
     RecordReader rr = new CSVRecordReader();
     rr.initialize(new FileSplit(new File(training_file)));
     var trainIter = new RecordReaderDataSetIterator(rr, batchSize, 0, 2);
 
     long start = System.nanoTime();
-    var builder = new NeuralNetConfiguration.Builder()
-        .seed(seed)
-        //.iterations(1)
-        .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
-        .updater(new Nesterovs(learningRate, 0.9))
-        //.learningRate(learningRate)
-        //.updater(Updater.NESTEROVS).momentum(0.9)
-        .list()
-        .layer(0, new DenseLayer.Builder().nIn(numInputs).nOut(numHiddenNodes)
-            .weightInit(WeightInit.XAVIER)
-            //.activation("relu")
-            .activation(Activation.RELU)
-            .build())
-        .layer(1, new DenseLayer.Builder().nIn(numHiddenNodes).nOut(numHiddenNodes)
-            .weightInit(WeightInit.XAVIER)
-            //.activation("relu")
-            .activation(Activation.RELU)
-            .build())
-        /*
-        .layer(2, new DenseLayer.Builder().nIn(numHiddenNodes).nOut(numHiddenNodes)
-            .weightInit(WeightInit.XAVIER)
-            .activation("relu")
-            .build())
-        .layer(3, new DenseLayer.Builder().nIn(numHiddenNodes).nOut(numHiddenNodes)
-            .weightInit(WeightInit.XAVIER)
-            .activation("relu")
-            .build())
-        .layer(4, new DenseLayer.Builder().nIn(numHiddenNodes).nOut(numHiddenNodes)
-            .weightInit(WeightInit.XAVIER)
-            .activation("relu")
-            .build())
-        .layer(5, new DenseLayer.Builder().nIn(numHiddenNodes).nOut(numHiddenNodes)
-            .weightInit(WeightInit.XAVIER)
-            .activation("relu")
-            .build())
-        .layer(6, new DenseLayer.Builder().nIn(numHiddenNodes).nOut(numHiddenNodes)
-            .weightInit(WeightInit.XAVIER)
-            .activation("relu")
-            .build())
-        .layer(7, new DenseLayer.Builder().nIn(numHiddenNodes).nOut(numHiddenNodes)
-            .weightInit(WeightInit.XAVIER)
-            .activation("relu")
-            .build())
-        /*
-        .layer(8, new DenseLayer.Builder().nIn(numHiddenNodes).nOut(numHiddenNodes)
-            .weightInit(WeightInit.XAVIER)
-            .activation("relu")
-            .build())
-        .layer(9, new DenseLayer.Builder().nIn(numHiddenNodes).nOut(numHiddenNodes)
-            .weightInit(WeightInit.XAVIER)
-            .activation("relu")
-            .build())
-        */
-        .layer(2, new OutputLayer.Builder(LossFunction.NEGATIVELOGLIKELIHOOD)
-            .weightInit(WeightInit.XAVIER)
-            .activation(Activation.SOFTMAX)
-            .nIn(numHiddenNodes)
-            .nOut(numOutputs).build());
-    //.pretrain(false)
-    //.backprop(true)
+    var builder =
+        new NeuralNetConfiguration.Builder()
+            .seed(seed)
+            // .iterations(1)
+            .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
+            .updater(new Nesterovs(learningRate, 0.9))
+            // .learningRate(learningRate)
+            // .updater(Updater.NESTEROVS).momentum(0.9)
+            .list()
+            .layer(
+                0,
+                new DenseLayer.Builder()
+                    .nIn(numInputs)
+                    .nOut(numHiddenNodes)
+                    .weightInit(WeightInit.XAVIER)
+                    // .activation("relu")
+                    .activation(Activation.RELU)
+                    .build())
+            .layer(
+                1,
+                new DenseLayer.Builder()
+                    .nIn(numHiddenNodes)
+                    .nOut(numHiddenNodes)
+                    .weightInit(WeightInit.XAVIER)
+                    // .activation("relu")
+                    .activation(Activation.RELU)
+                    .build())
+            .layer(
+                2,
+                new OutputLayer.Builder(LossFunction.NEGATIVELOGLIKELIHOOD)
+                    .weightInit(WeightInit.XAVIER)
+                    .activation(Activation.SOFTMAX)
+                    .nIn(numHiddenNodes)
+                    .nOut(numOutputs)
+                    .build());
+    // .pretrain(false)
+    // .backprop(true)
     builder.setBackpropType(BackpropType.Standard);
     MultiLayerConfiguration conf = builder.build();
 
